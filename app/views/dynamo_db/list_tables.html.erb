@@ -1,0 +1,7 @@
+<% if @dynamodb.list_tables.table_names.count > 0 %>
+  <ul>
+    <% for table in @dynamodb.list_tables.table_names do %>
+      <li><%= table %></li>
+    <% end %>
+  </ul>
+<% end %>
