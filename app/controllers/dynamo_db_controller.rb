@@ -3,7 +3,7 @@ class DynamoDbController < ApplicationController
   end
 
   def create_table
-    @dynamodb.create_table({
+    @dynamo_db.create_table({
       attribute_definitions: [
         {
           attribute_name: 'id',
@@ -27,10 +27,10 @@ class DynamoDbController < ApplicationController
   end
 
   def put_item
-    @dynamodb.put_item({
+    @dynamo_db.put_item({
       table_name: 'sandbox-access_logs',
       item: {
-        'id' => 'test3'
+        'id' => '1002'
       }
     })
 
@@ -38,14 +38,14 @@ class DynamoDbController < ApplicationController
   end
 
   def describe_table
-    @access_log = @dynamodb.describe_table({table_name: 'sandbox-access_logs'})
+    @access_log = @dynamo_db.describe_table({table_name: 'sandbox-access_logs'})
   end
 
   def list_tables
   end
 
   def drop_table
-    @dynamodb.delete_table({
+    @dynamo_db.delete_table({
       table_name: 'sandbox-access_logs'
     })
 

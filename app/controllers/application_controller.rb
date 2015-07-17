@@ -3,11 +3,11 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
-  before_action :set_dynamodb
+  before_action :set_dynamo_db
 
   private
-  def set_dynamodb
-    @dynamodb = Aws::DynamoDB::Client.new(
+  def set_dynamo_db
+    @dynamo_db = Aws::DynamoDB::Client.new(
       region: 'ap-northeast-1',
       endpoint: 'http://localhost:8000'
     )
