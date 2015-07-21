@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   def set_dynamo_db
     @dynamo_db = Aws::DynamoDB::Client.new(
       region: 'ap-northeast-1',
-      endpoint: 'http://localhost:8000'
+      #endpoint: 'http://localhost:8000'
     )
   end
 end

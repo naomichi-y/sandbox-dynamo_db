@@ -1,0 +1,9 @@
+<div class="row">
+  <h1><%= controller.action_name %></h1>
+  <h2>item</h2>
+  <% if @response.present? %>
+    <p><%= @response.item %></p>
+  <% else %>
+    <p>No data.</p>
+  <% end %>
+</div>

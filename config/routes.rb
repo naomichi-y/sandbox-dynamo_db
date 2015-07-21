@@ -15,10 +15,13 @@ Rails.application.routes.draw do
   #   resources :products
   root 'dynamo_db#index'
   get 'create_table' => 'dynamo_db#create_table'
-  get 'put_item' => 'dynamo_db#put_item'
   get 'describe_table' => 'dynamo_db#describe_table'
-  get 'list_tables' => 'dynamo_db#list_tables'
   get 'drop_table' => 'dynamo_db#drop_table'
+  get 'get_item' => 'dynamo_db#get_item'
+  get 'list_tables' => 'dynamo_db#list_tables'
+  get 'put_item' => 'dynamo_db#put_item'
+  get 'scan' => 'dynamo_db#scan'
+  get 'query' => 'dynamo_db#query'
 
   # Example resource route with options:
   #   resources :products do

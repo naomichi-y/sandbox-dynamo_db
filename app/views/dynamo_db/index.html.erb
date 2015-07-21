@@ -1,0 +1,10 @@
+<div class="row">
+  <h1><%= controller.action_name %></h1>
+  <ul>
+    <% @methods.each do |method| %>
+      <% if method.to_s != 'index' %>
+        <li><%= link_to(method, method.to_s) %></li>
+      <% end %>
+    <% end %>
+  </uL>
+</div>
