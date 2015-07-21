@@ -1,10 +1,14 @@
 <div class="row">
   <h1><%= controller.action_name %></h1>
-  <table>
-    <% @response.items.each do |item| %>
-      <tr>
-        <td><%= item %></td>
-      </tr>
-    <% end %>
-  </table>
+  <% if @response.count > 0 %>
+    <table>
+      <% @response.items.each do |item| %>
+        <tr>
+          <td><%= item %></td>
+        </tr>
+      <% end %>
+    </table>
+  <% else %>
+    <p>No data.</p>
+  <% end %>
 </div>

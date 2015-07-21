@@ -1,4 +1,8 @@
 class DynamoDbController < ApplicationController
+  LOG_TABLE = 'sandbox-access_logs'
+
+  before_filter :check_exist_table, except: [:index, :create_table]
+
   def index
     @methods = DynamoDbController.instance_methods(false)
   end
@@ -14,8 +18,16 @@ class DynamoDbController < ApplicationController
           attribute_name: 'date',
           attribute_type: 'S',
         },
+        {
+          attribute_name: 'point',
+          attribute_type: 'N',
+        },
+        {
+          attribute_name: 'gender',
+          attribute_type: 'S',
+        }
       ],
-      table_name: 'sandbox-access_logs',
+      table_name: LOG_TABLE,
       key_schema: [
         {
           attribute_name: 'id',
@@ -26,6 +38,44 @@ class DynamoDbController < ApplicationController
           key_type: 'RANGE'
         }
       ],
+      local_secondary_indexes: [
+        {
+          index_name: 'index_point',
+          key_schema: [
+            {
+              # Required HASH type attribute - must match the table's HASH key attribute name
+              attribute_name: 'id',
+              key_type: 'HASH'
+            },
+            {
+              # alternate RANGE key attribute for the secondary index
+              attribute_name: 'point',
+              key_type: 'RANGE'
+            }
+          ],
+          projection: {
+            projection_type: 'ALL',
+          }
+        }
+      ],
+      global_secondary_indexes: [
+        {
+          index_name: 'index_gender',
+          key_schema: [
+            {
+              attribute_name: 'gender',
+              key_type: 'HASH'
+            }
+          ],
+          projection: {
+            projection_type: 'ALL',
+          },
+          provisioned_throughput: {
+            read_capacity_units: 1,
+            write_capacity_units: 1
+          }
+        }
+      ],
       provisioned_throughput: {
         read_capacity_units: 1,
         write_capacity_units: 1,
@@ -34,18 +84,18 @@ class DynamoDbController < ApplicationController
   end
 
   def describe_table
-    @access_log = @dynamo_db.describe_table({table_name: 'sandbox-access_logs'})
+    @access_log = @dynamo_db.describe_table({table_name: LOG_TABLE})
   end
 
   def drop_table
     @dynamo_db.delete_table({
-      table_name: 'sandbox-access_logs'
+      table_name: LOG_TABLE
     })
   end
 
   def get_item
     @response = @dynamo_db.get_item({
-      table_name: 'sandbox-access_logs',
+      table_name: LOG_TABLE,
       key: {
         id: '1002',
         date: '20150722'
@@ -58,41 +108,65 @@ class DynamoDbController < ApplicationController
 
   def put_item
     @dynamo_db.put_item({
-      table_name: 'sandbox-access_logs',
+      table_name: LOG_TABLE,
       item: {
         id: '1003',
         date: '20150724',
         user_name: 'naomichi yamakita',
-        gender: 'male'
+        gender: 'male',
+        point: 2000
       }
     })
   end
 
   def scan
     @response = @dynamo_db.scan({
-      table_name: 'sandbox-access_logs'
+      table_name: LOG_TABLE
     })
   end
 
   def query
     @response = @dynamo_db.query({
-      table_name: 'sandbox-access_logs',
+      table_name: LOG_TABLE,
+      #  The name of an index to query. This index can be any local secondary index or global secondary index on the table.
+      # index_name: 'index_point',
+      index_name: 'index_gender',
+
+      # This is a legacy parameter, for backward compatibility. New applications should use KeyConditionExpression instead (...!)
       key_conditions: {
-        id: {
-          attribute_value_list: ['1003'],
+        # id: {
+        #   attribute_value_list: ['1003'],
+        #   comparison_operator: 'EQ'
+        # },
+
+        # # Use range key
+        # date: {
+        #   attribute_value_list: ['20150722', '20150724'],
+        #   comparison_operator: 'BETWEEN'
+        # },
+
+        # Use local secondary index
+        # point: {
+        #   attribute_value_list: [1000, 3000],
+        #   comparison_operator: 'BETWEEN'
+        # }
+
+        # Use global secondary index
+        gender: {
+          attribute_value_list: ['male'],
           comparison_operator: 'EQ'
-        },
-        date: {
-          attribute_value_list: ['20150722', '20150723'],
-          comparison_operator: 'BETWEEN'
         }
       },
-      query_filter: {
-        user_name: {
-          attribute_value_list: ['taro'],
-          comparison_operator: 'CONTAINS'
-        }
+      filter_expression: 'contains(user_name, :user_name)',
+      expression_attribute_values: {
+        ':user_name' =>'naomichi'
       }
     })
+  end
+
+  private
+  def check_exist_table
+    resource = Aws::DynamoDB::Resource.new(client: @dynamo_db)
+    raise 'Table does not exist.' unless resource.table(LOG_TABLE).present?
   end
 end
