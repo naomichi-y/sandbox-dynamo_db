@@ -15,17 +15,17 @@ class DynamoDbController < ApplicationController
           attribute_type: 'S',
         },
         {
-          attribute_name: 'date',
-          attribute_type: 'S',
-        },
-        {
           attribute_name: 'point',
           attribute_type: 'N',
         },
         {
           attribute_name: 'gender',
           attribute_type: 'S',
-        }
+        },
+        {
+          attribute_name: 'created_at',
+          attribute_type: 'S',
+        },
       ],
       table_name: LOG_TABLE,
       key_schema: [
@@ -34,7 +34,7 @@ class DynamoDbController < ApplicationController
           key_type: 'HASH',
         },
         {
-          attribute_name: 'date',
+          attribute_name: 'created_at',
           key_type: 'RANGE'
         }
       ],
@@ -98,7 +98,7 @@ class DynamoDbController < ApplicationController
       table_name: LOG_TABLE,
       key: {
         id: '1002',
-        date: '20150722'
+        created_at: '20150722'
       }
     })
   end
@@ -111,10 +111,10 @@ class DynamoDbController < ApplicationController
       table_name: LOG_TABLE,
       item: {
         id: '1003',
-        date: '20150724',
         user_name: 'naomichi yamakita',
         gender: 'male',
-        point: 2000
+        point: 2000,
+        created_at: '20150724'
       }
     })
   end
@@ -128,39 +128,42 @@ class DynamoDbController < ApplicationController
   def query
     @response = @dynamo_db.query({
       table_name: LOG_TABLE,
-      #  The name of an index to query. This index can be any local secondary index or global secondary index on the table.
-      # index_name: 'index_point',
-      index_name: 'index_gender',
 
-      # This is a legacy parameter, for backward compatibility. New applications should use KeyConditionExpression instead (...!)
-      key_conditions: {
-        # id: {
-        #   attribute_value_list: ['1003'],
-        #   comparison_operator: 'EQ'
-        # },
+      ## Use hash
+      # key_condition_expression: 'id = :id',
+      # expression_attribute_values: {
+      #   ':id' => '1003',
+      #   ':user_name' =>'naomichi',
+      # },
 
-        # # Use range key
-        # date: {
-        #   attribute_value_list: ['20150722', '20150724'],
-        #   comparison_operator: 'BETWEEN'
-        # },
-
-        # Use local secondary index
-        # point: {
-        #   attribute_value_list: [1000, 3000],
-        #   comparison_operator: 'BETWEEN'
-        # }
-
-        # Use global secondary index
-        gender: {
-          attribute_value_list: ['male'],
-          comparison_operator: 'EQ'
-        }
-      },
-      filter_expression: 'contains(user_name, :user_name)',
+      ## Use hash
+      key_condition_expression: 'id = :id AND created_at = :created_at',
       expression_attribute_values: {
-        ':user_name' =>'naomichi'
-      }
+        ':id' => '1003',
+        ':user_name' =>'naomichi',
+        ':created_at' => '20150724'
+      },
+
+      ## Use global secondary index
+      # index_name: 'index_point',
+      # key_condition_expression: 'id = :id AND point BETWEEN :begin_point AND :end_point',
+      # expression_attribute_values: {
+      #   ':id' => '1003',
+      #   ':user_name' =>'naomichi',
+      #   ':begin_point' =>  1000,
+      #   ':end_point' => 3000
+      # },
+
+      ## Use local secondary index
+      # index_name: 'index_gender',
+      # key_condition_expression: 'gender = :gender',
+      # expression_attribute_values: {
+      #   ':user_name' =>'naomichi',
+      #   ':gender' => 'male',
+      # },
+
+      # With filter
+      filter_expression: 'contains(user_name, :user_name)',
     })
   end
 
