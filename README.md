@@ -1,28 +1,28 @@
-== README
+# README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+### About
 
-Things you may want to cover:
+Rails上でDynamoDBのAPIを検証するためのサンプルアプリケーションです。
+デフォルトではDynamoDB Localを利用しますが、DynamoDBに切り替えることも可能です。
 
-* Ruby version
+### Install
 
-* System dependencies
+```
+bundle install --path=vendor/bundle
+./dynamodb_local/start
+bundle exec rails s
+```
 
-* Configuration
+`http://localhost:3000/`を開くと、DynamoDB APIを確認することができます (`http://localhost:8000/shell`でJS Shellを起動できます)。
+APIのリファレンスは[Module: Aws::DynamoDB API](http://docs.aws.amazon.com/sdkforruby/api/Aws/DynamoDB.html)を参照下さい。
 
-* Database creation
+### Tips
 
-* Database initialization
+DynamoDBを利用する場合、`app/controllers/application_controller.rb`のエンドポイントをコメントアウトします。
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+```
+@dynamo_db = Aws::DynamoDB::Client.new(
+  region: 'ap-northeast-1',
+  # endpoint: 'http://localhost:8000'
+)
+```
