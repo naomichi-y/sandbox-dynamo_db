@@ -1,9 +1,17 @@
 <div class="row">
   <h1><%= controller.action_name %></h1>
 
-  <h2>table_name</h2>
-  <p><%= @access_log.table.table_name %></p>
+  <dl>
+    <dt>creation_date_time</dt>
+    <dd><%= @access_log.table.creation_date_time %></dd>
 
-  <h2>item_count</h2>
-  <p><%= @access_log.table.item_count %></p>
+    <dt>item_count</dt>
+    <dd>
+      <%= @access_log.table.item_count %>
+      (The number of items in the specified table. DynamoDB updates this value approximately every six hours. Recent changes might not be reflected in this value.)
+    </dd>
+
+    <dt>table_name</dt>
+    <dd><%= @access_log.table.table_name %></dd>
+  </dl>
 </div>

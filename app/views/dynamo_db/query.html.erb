@@ -2,11 +2,18 @@
   <h1><%= controller.action_name %></h1>
   <% if @response.count > 0 %>
     <table>
-      <% @response.items.each do |item| %>
+      <thead>
         <tr>
-          <td><%= item %></td>
+          <th>Data</th>
         </tr>
-      <% end %>
+      </thead>
+      <tbody>
+        <% @response.items.each do |item| %>
+          <tr>
+            <td><%= item %></td>
+          </tr>
+        <% end %>
+      </tbody>
     </table>
   <% else %>
     <p>No data.</p>

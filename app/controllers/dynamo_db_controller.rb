@@ -97,8 +97,8 @@ class DynamoDbController < ApplicationController
     @response = @dynamo_db.get_item({
       table_name: LOG_TABLE,
       key: {
-        id: '1002',
-        created_at: '20150722'
+        id: '1003',
+        created_at: '20150724'
       }
     })
   end

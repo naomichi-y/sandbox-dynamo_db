@@ -23,6 +23,8 @@ Rails.application.routes.draw do
   get 'scan' => 'dynamo_db#scan'
   get 'query' => 'dynamo_db#query'
 
+  resources :activities, :only => [:new, :create]
+
   # Example resource route with options:
   #   resources :products do
   #     member do

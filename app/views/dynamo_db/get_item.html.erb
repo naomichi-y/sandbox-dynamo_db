@@ -1,9 +1,26 @@
 <div class="row">
   <h1><%= controller.action_name %></h1>
-  <h2>item</h2>
-  <% if @response.item.present? %>
-    <p><%= @response.item %></p>
-  <% else %>
-    <p>No data.</p>
-  <% end %>
+  <dl>
+    <dt>item</dt>
+    <dd>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <% if @response.item.present? %>
+                <%= @response.item %>
+              <% else %>
+                No data.
+              <% end %>
+            </td>
+          </tr>
+        </tbody>
+      </tbody>
+    </dd>
+  </dl>
 </div>
