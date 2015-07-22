@@ -1,5 +1,12 @@
 namespace :benchmark_records do
-  desc 'create benchmark records'
+  desc 'create benchmark table/records'
+  task :execute => :environment do
+    Rake::Task['benchmark_records:drop'].invoke
+    Rake::Task['benchmark_records:create'].invoke
+    Rake::Task['benchmark_records:generate'].invoke
+  end
+
+  desc 'drop benchmark table'
   task :drop => :environment do
     dynamo_db = DynamoDb.new.connect
 
@@ -12,8 +19,11 @@ namespace :benchmark_records do
         w.max_attempts = 5
       end
     end
+
+    puts 'Drop table.'
   end
 
+  desc 'create benchmark table'
   task :create => :environment do
     dynamo_db = DynamoDb.new.connect
     dynamo_db.create_table({
@@ -47,11 +57,14 @@ namespace :benchmark_records do
       w.delay = 3
       w.max_attempts = 5
     end
+
+    puts 'Created table.'
   end
 
+  desc 'create benchmark records'
   task :generate => :environment do
     items = []
-    max_count = 10
+    max_count = 400000
 
     for i in 1..max_count do
       items << {
