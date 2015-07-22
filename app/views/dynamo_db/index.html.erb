@@ -1,10 +1,20 @@
 <div class="row">
   <h1><%= controller.action_name %></h1>
+  <h2>dynamo_db</h2>
   <ul>
-    <% @methods.each do |method| %>
+    <% @dynamo_db_methods.each do |method| %>
       <% if method.to_s != 'index' %>
-        <li><%= link_to(method, method.to_s) %></li>
+        <li><%= link_to(method, controller: 'dynamo_db', action: method) %></li>
       <% end %>
     <% end %>
   </uL>
+
+  <h2>benchmarks</h2>
+  <ul>
+    <% @benchmarks_methods.each do |method| %>
+      <% if method.to_s != 'index' %>
+        <li><%= link_to(method, controller: 'benchmarks', action: method) %></li>
+      <% end %>
+    <% end %>
+  </ul>
 </div>

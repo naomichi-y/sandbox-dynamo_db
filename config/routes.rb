@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   # Example resource route (maps HTTP verbs to controller actions automatically):
   #   resources :products
   root 'dynamo_db#index'
+  get 'batch_write_item' => 'dynamo_db#batch_write_item'
   get 'create_table' => 'dynamo_db#create_table'
   get 'describe_table' => 'dynamo_db#describe_table'
   get 'drop_table' => 'dynamo_db#drop_table'
@@ -23,7 +24,7 @@ Rails.application.routes.draw do
   get 'scan' => 'dynamo_db#scan'
   get 'query' => 'dynamo_db#query'
 
-  resources :activities, :only => [:new, :create]
+  get 'benchmarks/score' => 'benchmarks#score'
 
   # Example resource route with options:
   #   resources :products do

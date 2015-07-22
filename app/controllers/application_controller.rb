@@ -4,18 +4,16 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   rescue_from Exception, with: :render_500
+
   before_action :set_dynamo_db
 
   def render_500(e)
-    @message = e.message
+    @e = e
     render template: 'errors/error_500', status: 500
   end
 
   private
   def set_dynamo_db
-    @dynamo_db = Aws::DynamoDB::Client.new(
-      region: 'ap-northeast-1',
-      # endpoint: 'http://localhost:8000'
-    )
+    @dynamo_db = DynamoDb.new.connect
   end
 end

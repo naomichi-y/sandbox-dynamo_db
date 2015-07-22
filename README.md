@@ -18,10 +18,10 @@ APIのリファレンスは[Module: Aws::DynamoDB API](http://docs.aws.amazon.co
 
 ### Tips
 
-DynamoDBを利用する場合、`app/controllers/application_controller.rb`のエンドポイントをコメントアウトします。
+DynamoDBを利用する場合、`lib/dynamo_db.rb`のエンドポイントをコメントアウトします。
 
 ```
-@dynamo_db = Aws::DynamoDB::Client.new(
+Aws::DynamoDB::Client.new(
   region: 'ap-northeast-1',
   # endpoint: 'http://localhost:8000'
 )

@@ -1,10 +1,32 @@
 class DynamoDbController < ApplicationController
-  LOG_TABLE = 'sandbox-access_logs'
-
   before_filter :check_exist_table, except: [:index, :create_table]
 
   def index
-    @methods = DynamoDbController.instance_methods(false)
+    @dynamo_db_methods = DynamoDbController.instance_methods(false)
+    @benchmarks_methods = BenchmarksController.instance_methods(false)
+  end
+
+  def batch_write_item
+    @dynamo_db.batch_write_item({
+      request_items: {
+       DynamoDb::TABLE_TEST => [{
+         put_request: {
+           item: {
+             id: '1000',
+             activity_date: '20150725'
+           },
+           item: {
+             id: '1000',
+             activity_date: '20150726'
+           },
+           item: {
+             id: '1000',
+             activity_date: '20150727'
+           }
+         }
+       }]
+      }
+    })
   end
 
   def create_table
@@ -23,18 +45,18 @@ class DynamoDbController < ApplicationController
           attribute_type: 'S',
         },
         {
-          attribute_name: 'created_at',
+          attribute_name: 'activity_date',
           attribute_type: 'S',
         },
       ],
-      table_name: LOG_TABLE,
+      table_name: DynamoDb::TABLE_TEST,
       key_schema: [
         {
           attribute_name: 'id',
           key_type: 'HASH',
         },
         {
-          attribute_name: 'created_at',
+          attribute_name: 'activity_date',
           key_type: 'RANGE'
         }
       ],
@@ -81,24 +103,33 @@ class DynamoDbController < ApplicationController
         write_capacity_units: 1,
       }
     })
+
+    @dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_TEST}) do |w|
+      w.delay = 3
+      w.max_attempts = 5
+    end
   end
 
   def describe_table
-    @access_log = @dynamo_db.describe_table({table_name: LOG_TABLE})
+    @access_log = @dynamo_db.describe_table({table_name: DynamoDb::TABLE_TEST})
   end
 
   def drop_table
     @dynamo_db.delete_table({
-      table_name: LOG_TABLE
+      table_name: DynamoDb::TABLE_TEST
     })
+    @dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_TEST}) do |w|
+      w.delay = 3
+      w.max_attempts = 5
+    end
   end
 
   def get_item
     @response = @dynamo_db.get_item({
-      table_name: LOG_TABLE,
+      table_name: DynamoDb::TABLE_TEST,
       key: {
         id: '1003',
-        created_at: '20150724'
+        activity_date: '20150724'
       }
     })
   end
@@ -108,26 +139,26 @@ class DynamoDbController < ApplicationController
 
   def put_item
     @dynamo_db.put_item({
-      table_name: LOG_TABLE,
+      table_name: DynamoDb::TABLE_TEST,
       item: {
         id: '1003',
         user_name: 'naomichi yamakita',
         gender: 'male',
         point: 2000,
-        created_at: '20150724'
+        activity_date: '20150724'
       }
     })
   end
 
   def scan
     @response = @dynamo_db.scan({
-      table_name: LOG_TABLE
+      table_name: DynamoDb::TABLE_TEST
     })
   end
 
   def query
     @response = @dynamo_db.query({
-      table_name: LOG_TABLE,
+      table_name: DynamoDb::TABLE_TEST,
 
       ## Use hash
       # key_condition_expression: 'id = :id',
@@ -136,12 +167,12 @@ class DynamoDbController < ApplicationController
       #   ':user_name' =>'naomichi',
       # },
 
-      ## Use hash
-      key_condition_expression: 'id = :id AND created_at = :created_at',
+      ## Use hash+range
+      key_condition_expression: 'id = :id AND begins_with(activity_date, :activity_date)',
       expression_attribute_values: {
         ':id' => '1003',
         ':user_name' =>'naomichi',
-        ':created_at' => '20150724'
+        ':activity_date' => '2015'
       },
 
       ## Use global secondary index
@@ -169,7 +200,6 @@ class DynamoDbController < ApplicationController
 
   private
   def check_exist_table
-    resource = Aws::DynamoDB::Resource.new(client: @dynamo_db)
-    raise 'Table does not exist.' unless resource.table(LOG_TABLE).present?
+    raise 'Table does not exist.' unless @dynamo_db.exist_table?(DynamoDb::TABLE_TEST)
   end
 end
