@@ -9,22 +9,32 @@ class DynamoDbController < ApplicationController
   def batch_write_item
     @dynamo_db.batch_write_item({
       request_items: {
-       DynamoDb::TABLE_TEST => [{
-         put_request: {
-           item: {
-             id: '1000',
-             activity_date: '20150725'
-           },
-           item: {
-             id: '1000',
-             activity_date: '20150726'
-           },
-           item: {
-             id: '1000',
-             activity_date: '20150727'
+       DynamoDb::TABLE_TEST => [
+         {
+           put_request: {
+             item: {
+               id: '1000',
+               activity_date: '20150727'
+             }
            }
-         }
-       }]
+         },
+         {
+           put_request: {
+             item: {
+               id: '1000',
+               activity_date: '20150728'
+             }
+           }
+         },
+         {
+           put_request: {
+             item: {
+               id: '1000',
+               activity_date: '20150729'
+             }
+           }
+         },
+       ]
       }
     })
   end
