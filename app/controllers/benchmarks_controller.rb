@@ -1,4 +1,4 @@
 class BenchmarksController < ApplicationController
-  def score
+  def query
   end
 end

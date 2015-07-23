@@ -1,8 +1,8 @@
-class DynamoDbController < ApplicationController
+class SamplesController < ApplicationController
   before_filter :check_exist_table, except: [:index, :create_table]
 
   def index
-    @dynamo_db_methods = DynamoDbController.instance_methods(false)
+    @dynamo_db_methods = SamplesController.instance_methods(false)
     @benchmarks_methods = BenchmarksController.instance_methods(false)
   end
 
