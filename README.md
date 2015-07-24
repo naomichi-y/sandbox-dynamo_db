@@ -5,6 +5,8 @@
 Rails上でDynamoDBのAPIを検証するためのサンプルアプリケーションです。
 デフォルトではDynamoDB Localを利用しますが、DynamoDBに切り替えることも可能です。
 
+<img src="https://raw.githubusercontent.com/naomichi-y/sandbox-dynamo_db/images/index.png" width="600">
+
 ### Install
 
 ```
