@@ -13,7 +13,7 @@ class SamplesController < ApplicationController
          {
            put_request: {
              item: {
-               id: '1000',
+               id: 1000,
                activity_date: '20150727'
              }
            }
@@ -21,7 +21,7 @@ class SamplesController < ApplicationController
          {
            put_request: {
              item: {
-               id: '1000',
+               id: 1000,
                activity_date: '20150728'
              }
            }
@@ -29,7 +29,7 @@ class SamplesController < ApplicationController
          {
            put_request: {
              item: {
-               id: '1000',
+               id: 1000,
                activity_date: '20150729'
              }
            }
@@ -44,7 +44,7 @@ class SamplesController < ApplicationController
       attribute_definitions: [
         {
           attribute_name: 'id',
-          attribute_type: 'S',
+          attribute_type: 'N',
         },
         {
           attribute_name: 'point',
@@ -138,7 +138,7 @@ class SamplesController < ApplicationController
     @response = @dynamo_db.get_item({
       table_name: DynamoDb::TABLE_TEST,
       key: {
-        id: '1003',
+        id: 1003,
         activity_date: '20150724'
       }
     })
@@ -151,7 +151,7 @@ class SamplesController < ApplicationController
     @dynamo_db.put_item({
       table_name: DynamoDb::TABLE_TEST,
       item: {
-        id: '1003',
+        id: 1003,
         user_name: 'naomichi yamakita',
         gender: 'male',
         point: 2000,
@@ -173,29 +173,29 @@ class SamplesController < ApplicationController
       ## Use hash
       # key_condition_expression: 'id = :id',
       # expression_attribute_values: {
-      #   ':id' => '1003',
+      #   ':id' => 1003,
       #   ':user_name' =>'naomichi',
       # },
 
       ## Use hash+range
       key_condition_expression: 'id = :id AND begins_with(activity_date, :activity_date)',
       expression_attribute_values: {
-        ':id' => '1003',
+        ':id' => 1003,
         ':user_name' =>'naomichi',
         ':activity_date' => '2015'
       },
 
-      ## Use global secondary index
+      ## Use local secondary index
       # index_name: 'index_point',
       # key_condition_expression: 'id = :id AND point BETWEEN :begin_point AND :end_point',
       # expression_attribute_values: {
-      #   ':id' => '1003',
+      #   ':id' => 1003,
       #   ':user_name' =>'naomichi',
       #   ':begin_point' =>  1000,
       #   ':end_point' => 3000
       # },
 
-      ## Use local secondary index
+      ## Use global secondary index
       # index_name: 'index_gender',
       # key_condition_expression: 'gender = :gender',
       # expression_attribute_values: {

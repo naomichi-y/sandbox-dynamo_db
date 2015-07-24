@@ -30,12 +30,16 @@ namespace :benchmark_records do
       attribute_definitions: [
         {
           attribute_name: 'id',
-          attribute_type: 'N',
+          attribute_type: 'S',
         },
         {
           attribute_name: 'activity_date',
           attribute_type: 'S',
         },
+        {
+          attribute_name: 'user_type',
+          attribute_type: 'N',
+        }
       ],
       table_name: DynamoDb::TABLE_BENCHMARK,
       key_schema: [
@@ -48,9 +52,27 @@ namespace :benchmark_records do
           key_type: 'RANGE'
         }
       ],
+      global_secondary_indexes: [
+        {
+          index_name: 'index_user_type',
+          key_schema: [
+            {
+              attribute_name: 'user_type',
+              key_type: 'HASH'
+            }
+          ],
+          projection: {
+            projection_type: 'ALL',
+          },
+          provisioned_throughput: {
+            read_capacity_units: 10,
+            write_capacity_units: 10
+          }
+        }
+      ],
       provisioned_throughput: {
-        read_capacity_units: 20,
-        write_capacity_units: 20,
+        read_capacity_units: 15,
+        write_capacity_units: 15,
       }
     })
     dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_BENCHMARK}) do |w|
@@ -68,7 +90,7 @@ namespace :benchmark_records do
     id = 1
     batch_limit = 25
     created_count = 0
-    max_count = 7000
+    max_count = 1000
     activity_date = Time.now.strftime("%Y%m%d")
 
     execute_time = Benchmark.realtime do
@@ -83,17 +105,13 @@ namespace :benchmark_records do
           items << {
             put_request: {
               item: {
-                id: id,
-                activity_type: 'message_open',
+                id: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
+                activity_type: rand(1..9),
                 activity_date: activity_date,
-                source: {
-                  type: 'facebook',
-                  code: 12345678
-                },
-                user_type: rand(1..8),
-                previous_url: '/0123456789/0123456789/0123456789',
+                user_type: rand(1..9),
+                previous_url: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
                 access_date: Time.now.to_i,
-                session_id: [*1..9, *'A'..'Z', *'a'..'z'].sample(32).join
+                session_id: [*1..9, *'A'..'Z', *'a'..'z'].sample(48).join
               }
             }
           }
@@ -109,10 +127,11 @@ namespace :benchmark_records do
         })
 
         if response.unprocessed_items.count > 0
-          p "Write failure! (retry wait #{wait}sec)"
-          wait = 3
+          wait = 0.2
 
           begin
+            puts "Write failure! (retry wait #{wait}sec)"
+
             sleep(wait)
             response = dynamo_db.batch_write_item({
               request_items: {
@@ -120,7 +139,7 @@ namespace :benchmark_records do
               }
             })
 
-            wait * 2
+            wait = wait * 2
           end while response.unprocessed_items.count > 0
         end
 
