@@ -33,8 +33,8 @@ namespace :benchmark_records do
           attribute_type: 'S',
         },
         {
-          attribute_name: 'activity_date',
-          attribute_type: 'S',
+          attribute_name: 'timestamp',
+          attribute_type: 'N',
         },
         {
           attribute_name: 'user_type',
@@ -48,7 +48,7 @@ namespace :benchmark_records do
           key_type: 'HASH',
         },
         {
-          attribute_name: 'activity_date',
+          attribute_name: 'timestamp',
           key_type: 'RANGE'
         }
       ],
@@ -90,8 +90,7 @@ namespace :benchmark_records do
     id = 1
     batch_limit = 25
     created_count = 0
-    max_count = 1000
-    activity_date = Time.now.strftime("%Y%m%d")
+    max_count = 100
 
     execute_time = Benchmark.realtime do
       while max_count > created_count
@@ -106,11 +105,10 @@ namespace :benchmark_records do
             put_request: {
               item: {
                 id: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
+                timestamp: Time.now.getutc.to_f,
                 activity_type: rand(1..9),
-                activity_date: activity_date,
                 user_type: rand(1..9),
                 previous_url: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
-                access_date: Time.now.to_i,
                 session_id: [*1..9, *'A'..'Z', *'a'..'z'].sample(48).join
               }
             }

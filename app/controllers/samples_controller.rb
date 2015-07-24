@@ -14,7 +14,12 @@ class SamplesController < ApplicationController
            put_request: {
              item: {
                id: 1000,
-               activity_date: '20150727'
+               timestamp: 1437723212.765972,
+               name: 'naomichi yamakita',
+               agent: {
+                 browser: 'Chrome',
+                 version: '43'
+               }
              }
            }
          },
@@ -22,7 +27,7 @@ class SamplesController < ApplicationController
            put_request: {
              item: {
                id: 1000,
-               activity_date: '20150728'
+               timestamp: 1437723212.765973,
              }
            }
          },
@@ -30,7 +35,7 @@ class SamplesController < ApplicationController
            put_request: {
              item: {
                id: 1000,
-               activity_date: '20150729'
+               timestamp: 1437723212.765974,
              }
            }
          },
@@ -47,15 +52,15 @@ class SamplesController < ApplicationController
           attribute_type: 'N',
         },
         {
+          attribute_name: 'timestamp',
+          attribute_type: 'N',
+        },
+        {
           attribute_name: 'point',
           attribute_type: 'N',
         },
         {
           attribute_name: 'gender',
-          attribute_type: 'S',
-        },
-        {
-          attribute_name: 'activity_date',
           attribute_type: 'S',
         },
       ],
@@ -66,7 +71,7 @@ class SamplesController < ApplicationController
           key_type: 'HASH',
         },
         {
-          attribute_name: 'activity_date',
+          attribute_name: 'timestamp',
           key_type: 'RANGE'
         }
       ],
@@ -138,8 +143,8 @@ class SamplesController < ApplicationController
     @response = @dynamo_db.get_item({
       table_name: DynamoDb::TABLE_TEST,
       key: {
-        id: 1003,
-        activity_date: '20150724'
+        id: 1000,
+        timestamp: 1437723212.765971
       }
     })
   end
@@ -151,11 +156,15 @@ class SamplesController < ApplicationController
     @dynamo_db.put_item({
       table_name: DynamoDb::TABLE_TEST,
       item: {
-        id: 1003,
-        user_name: 'naomichi yamakita',
+        id: 1000,
+        timestamp: 1437723212.765971,
+        name: 'naomichi yamakita',
         gender: 'male',
         point: 2000,
-        activity_date: '20150724'
+        agent: {
+          browser: 'Chrome',
+          version: '43'
+        }
       }
     })
   end
@@ -170,41 +179,62 @@ class SamplesController < ApplicationController
     @response = @dynamo_db.query({
       table_name: DynamoDb::TABLE_TEST,
 
-      ## Use hash
-      # key_condition_expression: 'id = :id',
-      # expression_attribute_values: {
-      #   ':id' => 1003,
-      #   ':user_name' =>'naomichi',
-      # },
-
-      ## Use hash+range
-      key_condition_expression: 'id = :id AND begins_with(activity_date, :activity_date)',
-      expression_attribute_values: {
-        ':id' => 1003,
-        ':user_name' =>'naomichi',
-        ':activity_date' => '2015'
+      ## Use hash search
+      key_condition_expression: 'id = :id',
+      expression_attribute_names: {
+        '#name' => 'name',
+        '#agent' => 'agent'
       },
+      expression_attribute_values: {
+        ':id' => 1000,
+        ':name' => 'naomichi',
+        ':browser' => 'Chrome'
+      },
+
+      ## Use hash+range search
+      # key_condition_expression: 'id = :id AND begins_with(#timestamp, :timestamp)',
+      # expression_attribute_names: {
+      #   '#timestamp' => 'timestamp',
+      #   '#name' => 'name',
+      #   '#agent' => 'agent'
+      # },
+      # expression_attribute_values: {
+      #   ':id' => 1000,
+      #   ':name' =>'naomichi',
+      #   ':timestamp' => '2015',
+      #   ':browser' => 'Chrome'
+      # },
 
       ## Use local secondary index
       # index_name: 'index_point',
       # key_condition_expression: 'id = :id AND point BETWEEN :begin_point AND :end_point',
+      # expression_attribute_names: {
+      #   '#name' => 'name',
+      #   '#agent' => 'agent'
+      # },
       # expression_attribute_values: {
-      #   ':id' => 1003,
-      #   ':user_name' =>'naomichi',
+      #   ':id' => 1000,
+      #   ':name' =>'naomichi',
       #   ':begin_point' =>  1000,
-      #   ':end_point' => 3000
+      #   ':end_point' => 3000,
+      #   ':browser' => 'Chrome'
       # },
 
       ## Use global secondary index
       # index_name: 'index_gender',
       # key_condition_expression: 'gender = :gender',
+      # expression_attribute_names: {
+      #   '#name' => 'name',
+      #   '#agent' => 'agent'
+      # },
       # expression_attribute_values: {
-      #   ':user_name' =>'naomichi',
+      #   ':name' =>'naomichi',
       #   ':gender' => 'male',
+      #   ':browser' => 'Chrome'
       # },
 
       # With filter
-      filter_expression: 'contains(user_name, :user_name)',
+      filter_expression: 'contains(#name, :name) AND #agent.browser = :browser',
     })
   end
 
