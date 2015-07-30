@@ -9,16 +9,17 @@ class SamplesController < ApplicationController
   def batch_write_item
     @dynamo_db.batch_write_item({
       request_items: {
-       DynamoDb::TABLE_TEST => [
+       DynamoDb::TABLE_SAMPLE => [
          {
            put_request: {
              item: {
                id: 1000,
+               thread_group_id: 1000,
                timestamp: 1437723212.765972,
-               name: 'naomichi yamakita',
-               agent: {
-                 browser: 'Chrome',
-                 version: '43'
+               message: 'Good morning',
+               client: {
+                 remote_ip: '192.168.0.1',
+                 browser_name: 'Chrome'
                }
              }
            }
@@ -28,6 +29,8 @@ class SamplesController < ApplicationController
              item: {
                id: 1000,
                timestamp: 1437723212.765973,
+               thread_group_id: 2000,
+               message: 'Goodbye'
              }
            }
          },
@@ -36,6 +39,12 @@ class SamplesController < ApplicationController
              item: {
                id: 1000,
                timestamp: 1437723212.765974,
+               thread_group_id: 3000,
+               message: 'So long',
+               client: {
+                 remote_ip: '192.168.0.1',
+                 browser_name: 'Firefox'
+               }
              }
            }
          },
@@ -56,15 +65,15 @@ class SamplesController < ApplicationController
           attribute_type: 'N',
         },
         {
-          attribute_name: 'point',
+          attribute_name: 'thread_group_id',
           attribute_type: 'N',
         },
         {
-          attribute_name: 'gender',
+          attribute_name: 'message',
           attribute_type: 'S',
         },
       ],
-      table_name: DynamoDb::TABLE_TEST,
+      table_name: DynamoDb::TABLE_SAMPLE,
       key_schema: [
         {
           attribute_name: 'id',
@@ -77,7 +86,7 @@ class SamplesController < ApplicationController
       ],
       local_secondary_indexes: [
         {
-          index_name: 'index_point',
+          index_name: 'index_thread_group_id',
           key_schema: [
             {
               # Required HASH type attribute - must match the table's HASH key attribute name
@@ -86,7 +95,7 @@ class SamplesController < ApplicationController
             },
             {
               # alternate RANGE key attribute for the secondary index
-              attribute_name: 'point',
+              attribute_name: 'thread_group_id',
               key_type: 'RANGE'
             }
           ],
@@ -97,10 +106,10 @@ class SamplesController < ApplicationController
       ],
       global_secondary_indexes: [
         {
-          index_name: 'index_gender',
+          index_name: 'index_message',
           key_schema: [
             {
-              attribute_name: 'gender',
+              attribute_name: 'message',
               key_type: 'HASH'
             }
           ],
@@ -119,21 +128,21 @@ class SamplesController < ApplicationController
       }
     })
 
-    @dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_TEST}) do |w|
+    @dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_SAMPLE}) do |w|
       w.delay = 3
       w.max_attempts = 5
     end
   end
 
   def describe_table
-    @access_log = @dynamo_db.describe_table({table_name: DynamoDb::TABLE_TEST})
+    @access_log = @dynamo_db.describe_table({table_name: DynamoDb::TABLE_SAMPLE})
   end
 
   def drop_table
     @dynamo_db.delete_table({
-      table_name: DynamoDb::TABLE_TEST
+      table_name: DynamoDb::TABLE_SAMPLE
     })
-    @dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_TEST}) do |w|
+    @dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_SAMPLE}) do |w|
       w.delay = 3
       w.max_attempts = 5
     end
@@ -141,7 +150,7 @@ class SamplesController < ApplicationController
 
   def get_item
     @response = @dynamo_db.get_item({
-      table_name: DynamoDb::TABLE_TEST,
+      table_name: DynamoDb::TABLE_SAMPLE,
       key: {
         id: 1000,
         timestamp: 1437723212.765971
@@ -154,16 +163,15 @@ class SamplesController < ApplicationController
 
   def put_item
     @dynamo_db.put_item({
-      table_name: DynamoDb::TABLE_TEST,
+      table_name: DynamoDb::TABLE_SAMPLE,
       item: {
         id: 1000,
         timestamp: 1437723212.765971,
-        name: 'naomichi yamakita',
-        gender: 'male',
-        point: 2000,
-        agent: {
-          browser: 'Chrome',
-          version: '43'
+        thread_group_id: 2000,
+        message: 'Hello',
+        client: {
+          remote_ip: '192.168.0.1',
+          browser_name: 'Chrome'
         }
       }
     })
@@ -171,75 +179,61 @@ class SamplesController < ApplicationController
 
   def scan
     @response = @dynamo_db.scan({
-      table_name: DynamoDb::TABLE_TEST
+      table_name: DynamoDb::TABLE_SAMPLE
     })
   end
 
   def query
     @response = @dynamo_db.query({
-      table_name: DynamoDb::TABLE_TEST,
+      table_name: DynamoDb::TABLE_SAMPLE,
 
       ## Use hash search
-      key_condition_expression: 'id = :id',
-      expression_attribute_names: {
-        '#name' => 'name',
-        '#agent' => 'agent'
-      },
-      expression_attribute_values: {
-        ':id' => 1000,
-        ':name' => 'naomichi',
-        ':browser' => 'Chrome'
-      },
+      # key_condition_expression: 'id = :id',
+      # expression_attribute_values: {
+      #   ':id' => 1000,
+      #   ':remote_ip' => '192.168.0.1',
+      #   ':browser_name' => 'Chrome'
+      # },
 
       ## Use hash+range search
-      # key_condition_expression: 'id = :id AND begins_with(#timestamp, :timestamp)',
+      # key_condition_expression: 'id = :id AND #timestamp BETWEEN :timestamp',
       # expression_attribute_names: {
-      #   '#timestamp' => 'timestamp',
-      #   '#name' => 'name',
-      #   '#agent' => 'agent'
+      #   '#timestamp' => 'timestamp'
       # },
       # expression_attribute_values: {
       #   ':id' => 1000,
-      #   ':name' =>'naomichi',
-      #   ':timestamp' => '2015',
-      #   ':browser' => 'Chrome'
+      #   ':timestamp' => 1437723212.765971,
+      #   ':remote_ip' => '192.168.0.1',
+      #   ':browser_name' => 'Chrome'
       # },
 
       ## Use local secondary index
-      # index_name: 'index_point',
-      # key_condition_expression: 'id = :id AND point BETWEEN :begin_point AND :end_point',
-      # expression_attribute_names: {
-      #   '#name' => 'name',
-      #   '#agent' => 'agent'
-      # },
+      # index_name: 'index_thread_group_id',
+      # key_condition_expression: 'id = :id AND thread_group_id BETWEEN :begin_thread_group_id AND :end_thread_group_id',
       # expression_attribute_values: {
       #   ':id' => 1000,
-      #   ':name' =>'naomichi',
-      #   ':begin_point' =>  1000,
-      #   ':end_point' => 3000,
-      #   ':browser' => 'Chrome'
+      #   ':begin_thread_group_id' =>  1000,
+      #   ':end_thread_group_id' => 3000,
+      #   ':remote_ip' => '192.168.0.1',
+      #   ':browser_name' => 'Chrome'
       # },
 
       ## Use global secondary index
-      # index_name: 'index_gender',
-      # key_condition_expression: 'gender = :gender',
-      # expression_attribute_names: {
-      #   '#name' => 'name',
-      #   '#agent' => 'agent'
-      # },
-      # expression_attribute_values: {
-      #   ':name' =>'naomichi',
-      #   ':gender' => 'male',
-      #   ':browser' => 'Chrome'
-      # },
+      index_name: 'index_message',
+      key_condition_expression: 'message = :message',
+      expression_attribute_values: {
+        ':message' => 'So long',
+        ':remote_ip' => '192.168.0.1',
+        ':browser_name' => 'Firefox'
+      },
 
       # With filter
-      filter_expression: 'contains(#name, :name) AND #agent.browser = :browser',
+      filter_expression: 'client.remote_ip = :remote_ip AND client.browser_name = :browser_name',
     })
   end
 
   private
   def check_exist_table
-    raise 'Table does not exist.' unless @dynamo_db.exist_table?(DynamoDb::TABLE_TEST)
+    raise 'Table does not exist.' unless @dynamo_db.exist_table?(DynamoDb::TABLE_SAMPLE)
   end
 end

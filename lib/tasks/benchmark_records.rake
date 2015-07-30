@@ -37,7 +37,7 @@ namespace :benchmark_records do
           attribute_type: 'N',
         },
         {
-          attribute_name: 'user_type',
+          attribute_name: 'thread_group_id',
           attribute_type: 'N',
         }
       ],
@@ -54,10 +54,10 @@ namespace :benchmark_records do
       ],
       global_secondary_indexes: [
         {
-          index_name: 'index_user_type',
+          index_name: 'index_thread_group_id',
           key_schema: [
             {
-              attribute_name: 'user_type',
+              attribute_name: 'thread_group_id',
               key_type: 'HASH'
             }
           ],
@@ -90,7 +90,7 @@ namespace :benchmark_records do
     id = 1
     batch_limit = 25
     created_count = 0
-    max_count = 100
+    max_count = 1000
 
     execute_time = Benchmark.realtime do
       while max_count > created_count
@@ -106,10 +106,9 @@ namespace :benchmark_records do
               item: {
                 id: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
                 timestamp: Time.now.getutc.to_f,
-                activity_type: rand(1..9),
-                user_type: rand(1..9),
-                previous_url: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
-                session_id: [*1..9, *'A'..'Z', *'a'..'z'].sample(48).join
+                thread_group_id: rand(1..9),
+                subject: [*1..9, *'A'..'Z', *'a'..'z'].sample(16).join,
+                message: [*1..9, *'A'..'Z', *'a'..'z'].sample(48).join
               }
             }
           }
