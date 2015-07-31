@@ -1,12 +1,12 @@
 class DynamoDb
-  TABLE_TEST = 'sandbox-tests'
-  TABLE_BENCHMARK = 'sandbox-benchmarks'
+  TABLE_TEST = 'test.threads'
+  TABLE_BENCHMARK = 'test.benchmark_threads'
 
   def connect
     Aws::DynamoDB::Client.new(
       # credentials: Aws::SharedCredentials.new(profile_name: 'private'),
       region: 'ap-northeast-1',
-      # endpoint: 'http://localhost:8000'
+      endpoint: 'http://localhost:8000'
     )
   end
 
