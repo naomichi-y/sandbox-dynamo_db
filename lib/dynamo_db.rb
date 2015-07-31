@@ -1,6 +1,6 @@
 class DynamoDb
-  TABLE_TEST = 'test.threads'
-  TABLE_BENCHMARK = 'test.benchmark_threads'
+  TABLE_THREADS = 'test.threads'
+  TABLE_BENCHMARK_THREADS = 'test.benchmark_threads'
 
   def connect
     Aws::DynamoDB::Client.new(

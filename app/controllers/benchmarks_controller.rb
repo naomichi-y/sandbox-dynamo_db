@@ -2,7 +2,7 @@ class BenchmarksController < ApplicationController
   def query
     @execute_time = Benchmark.realtime do
       @response = @dynamo_db.query({
-        table_name: DynamoDb::TABLE_BENCHMARK,
+        table_name: DynamoDb::TABLE_BENCHMARK_THREADS,
         index_name: 'index_thread_group_id',
 
         ## Use hash

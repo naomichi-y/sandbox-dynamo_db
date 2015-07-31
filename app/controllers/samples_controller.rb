@@ -9,7 +9,7 @@ class SamplesController < ApplicationController
   def batch_write_item
     @dynamo_db.batch_write_item({
       request_items: {
-       DynamoDb::TABLE_SAMPLE => [
+       DynamoDb::TABLE_THREADS => [
          {
            put_request: {
              item: {
@@ -73,7 +73,7 @@ class SamplesController < ApplicationController
           attribute_type: 'S',
         },
       ],
-      table_name: DynamoDb::TABLE_SAMPLE,
+      table_name: DynamoDb::TABLE_THREADS,
       key_schema: [
         {
           attribute_name: 'id',
@@ -128,21 +128,21 @@ class SamplesController < ApplicationController
       }
     })
 
-    @dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_SAMPLE}) do |w|
+    @dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_THREADS}) do |w|
       w.delay = 3
       w.max_attempts = 5
     end
   end
 
   def describe_table
-    @access_log = @dynamo_db.describe_table({table_name: DynamoDb::TABLE_SAMPLE})
+    @access_log = @dynamo_db.describe_table({table_name: DynamoDb::TABLE_THREADS})
   end
 
   def drop_table
     @dynamo_db.delete_table({
-      table_name: DynamoDb::TABLE_SAMPLE
+      table_name: DynamoDb::TABLE_THREADS
     })
-    @dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_SAMPLE}) do |w|
+    @dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_THREADS}) do |w|
       w.delay = 3
       w.max_attempts = 5
     end
@@ -150,7 +150,7 @@ class SamplesController < ApplicationController
 
   def get_item
     @response = @dynamo_db.get_item({
-      table_name: DynamoDb::TABLE_SAMPLE,
+      table_name: DynamoDb::TABLE_THREADS,
       key: {
         id: 1000,
         timestamp: 1437723212.765971
@@ -163,7 +163,7 @@ class SamplesController < ApplicationController
 
   def put_item
     @dynamo_db.put_item({
-      table_name: DynamoDb::TABLE_SAMPLE,
+      table_name: DynamoDb::TABLE_THREADS,
       item: {
         id: 1000,
         timestamp: 1437723212.765971,
@@ -179,13 +179,13 @@ class SamplesController < ApplicationController
 
   def scan
     @response = @dynamo_db.scan({
-      table_name: DynamoDb::TABLE_SAMPLE
+      table_name: DynamoDb::TABLE_THREADS
     })
   end
 
   def query
     @response = @dynamo_db.query({
-      table_name: DynamoDb::TABLE_SAMPLE,
+      table_name: DynamoDb::TABLE_THREADS,
 
       ## Use hash search
       # key_condition_expression: 'id = :id',
@@ -234,6 +234,6 @@ class SamplesController < ApplicationController
 
   private
   def check_exist_table
-    raise 'Table does not exist.' unless @dynamo_db.exist_table?(DynamoDb::TABLE_SAMPLE)
+    raise 'Table does not exist.' unless @dynamo_db.exist_table?(DynamoDb::TABLE_THREADS)
   end
 end

@@ -10,11 +10,11 @@ namespace :benchmark_records do
   task :drop => :environment do
     dynamo_db = DynamoDb.new.connect
 
-    if dynamo_db.exist_table?(DynamoDb::TABLE_BENCHMARK)
+    if dynamo_db.exist_table?(DynamoDb::TABLE_BENCHMARK_THREADS)
       dynamo_db.delete_table({
-        table_name: DynamoDb::TABLE_BENCHMARK,
+        table_name: DynamoDb::TABLE_BENCHMARK_THREADS,
       })
-      dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_BENCHMARK}) do |w|
+      dynamo_db.wait_until(:table_not_exists, {:table_name => DynamoDb::TABLE_BENCHMARK_THREADS}) do |w|
         w.delay = 3
         w.max_attempts = 5
       end
@@ -41,7 +41,7 @@ namespace :benchmark_records do
           attribute_type: 'N',
         }
       ],
-      table_name: DynamoDb::TABLE_BENCHMARK,
+      table_name: DynamoDb::TABLE_BENCHMARK_THREADS,
       key_schema: [
         {
           attribute_name: 'id',
@@ -75,7 +75,7 @@ namespace :benchmark_records do
         write_capacity_units: 15,
       }
     })
-    dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_BENCHMARK}) do |w|
+    dynamo_db.wait_until(:table_exists, {:table_name => DynamoDb::TABLE_BENCHMARK_THREADS}) do |w|
       w.delay = 3
       w.max_attempts = 5
     end
@@ -119,7 +119,7 @@ namespace :benchmark_records do
         # If an exception does not occur
         response = dynamo_db.batch_write_item({
           request_items: {
-           DynamoDb::TABLE_BENCHMARK => items
+           DynamoDb::TABLE_BENCHMARK_THREADS => items
           }
         })
 
@@ -132,7 +132,7 @@ namespace :benchmark_records do
             sleep(wait)
             response = dynamo_db.batch_write_item({
               request_items: {
-               DynamoDb::TABLE_BENCHMARK => items
+               DynamoDb::TABLE_BENCHMARK_THREADS => items
               }
             })
 
